@@ -1,21 +1,27 @@
 import type { Country } from "../types/country";
 
-export function filterCountries(
-  countries: Country[],
-  query: string,
-  region: string,
-): Country[] {
-  const normalizedQuery = query.trim().toLowerCase();
-  const normalizedRegion = region.trim().toLowerCase();
+export function filterCountries (
+countries: Country[],
+query: string,
+region: string,
+): Country []{
 
-  return countries.filter((country: Country): boolean => {
-    const countryName = country.names.common.toLowerCase();
-    const countryRegion = country.region.toLowerCase();
+    const normalizeQuery: string = query.trim().toLowerCase(); 
 
-    const matchesName = countryName.includes(normalizedQuery);
-    const matchesRegion =
-      normalizedRegion === "" || countryRegion === normalizedRegion;
+    return countries.filter(
+        (country: Country): boolean => {
 
-    return matchesName && matchesRegion;
-  });
+            const countryName: string = 
+            country.names.common.toLowerCase(); 
+
+            const matchesName: boolean = 
+            countryName.includes(normalizeQuery); 
+
+            const matchesRegion:  boolean =
+            region === "" || country.region === region; 
+
+            return matchesName && matchesRegion
+
+        },
+    );
 }
