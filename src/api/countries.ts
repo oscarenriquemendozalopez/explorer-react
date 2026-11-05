@@ -1,5 +1,5 @@
 import type { CountriesResponse, Country } from "../types/country";
-import type { CountryDetail } from "../types/country-detail";
+import type { CountryDetail } from "../types";
 
 interface DetailResponse {
   data: {
