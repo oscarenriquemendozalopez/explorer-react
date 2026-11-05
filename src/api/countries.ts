@@ -7,7 +7,7 @@ interface DetailResponse {
   };
 }
 
-const API_KEY = import.meta.env.KEY;
+const API_KEY = import.meta.env.VITE_REST_COUNTRIES_API_KEY;
 const API_URL = "https://api.restcountries.com/countries/v5";
 const PAGE_SIZE = 100;
 
