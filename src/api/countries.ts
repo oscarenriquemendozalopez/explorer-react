@@ -1,107 +1,66 @@
-import type { CountriesResponse, Country } from "../types/country";
-import type { CountryDetail } from "../types";
+import type { Country } from "../types/country";
+import type { CountryDetail } from "../types/country-detail";
 
-interface DetailResponse {
-  data: {
-    objects: CountryDetail[];
-  };
-}
+let countriesPromise: Promise<CountryDetail[]> | undefined;
 
-const API_KEY = import.meta.env.VITE_REST_COUNTRIES_API_KEY;
-const API_URL = "https://api.restcountries.com/countries/v5";
-const PAGE_SIZE = 100;
-
-function getAuthHeaders(): HeadersInit {
-  if (!API_KEY) {
-    throw new Error("No se encontró la API key de REST Countries.");
-  }
-
-  return {
-    Authorization: `Bearer ${API_KEY}`,
-  };
-}
-
-export async function fetchCountries(): Promise<Country[]> {
-  const allCountries: Country[] = [];
-  let offset = 0;
-  let hasMoreCountries = true;
-
-  while (hasMoreCountries) {
-    const url = new URL(API_URL);
-
-    url.searchParams.set(
-      "response_fields",
-      [
-        "names.common",
-        "codes.alpha_2",
-        "flag.url_svg",
-        "flag.description",
-        "population",
-        "region",
-        "capitals",
-      ].join(","),
-    );
-
-    url.searchParams.set("limit", String(PAGE_SIZE));
-    url.searchParams.set("offset", String(offset));
-
-    const response = await fetch(url, {
-      headers: getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP al cargar países: ${response.status}`);
-    }
-
-    const result: CountriesResponse = await response.json();
-
-    allCountries.push(...result.data.objects);
-    hasMoreCountries = result.data.meta.more;
-    offset += PAGE_SIZE;
-  }
-
-  return allCountries;
-}
-
-export async function fetchCountryByCode(
-  code: string,
-): Promise<CountryDetail> {
-  const url = new URL(
-    `${API_URL}/codes.alpha_2/${encodeURIComponent(code)}`,
+async function requestCountries(
+  signal?: AbortSignal,
+): Promise<CountryDetail[]> {
+  const response: Response = await fetch(
+    `${import.meta.env.BASE_URL}data/countries.json`,
+    { signal },
   );
-
-  url.searchParams.set(
-    "response_fields",
-    [
-      "names.common",
-      "names.native",
-      "codes.alpha_2",
-      "flag.url_svg",
-      "flag.description",
-      "population",
-      "region",
-      "subregion",
-      "capitals",
-      "tlds",
-      "currencies",
-      "languages",
-      "borders",
-    ].join(","),
-  );
-
-  const response = await fetch(url, {
-    headers: getAuthHeaders(),
-  });
 
   if (!response.ok) {
-    throw new Error(`Error HTTP al cargar detalle: ${response.status}`);
+    throw new Error(
+      `Error al cargar los datos de la demo: ${response.status}`,
+    );
   }
 
-  const payload: DetailResponse = await response.json();
-  const country = payload.data.objects[0];
+  const data: unknown = await response.json();
+
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error(
+      "El archivo de países está vacío o tiene un formato incorrecto.",
+    );
+  }
+
+  return data as CountryDetail[];
+}
+
+function loadCountries(): Promise<CountryDetail[]> {
+    if (!countriesPromise) {
+    countriesPromise = requestCountries().catch(
+      (error: unknown) => {
+        countriesPromise = undefined;
+        throw error;
+      },
+    );
+  }
+
+  return countriesPromise;
+}
+
+export async function fetchCountries(
+  signal?: AbortSignal,
+): Promise<Country[]> {
+  const countries: CountryDetail[] = signal
+    ? await requestCountries(signal)
+    : await loadCountries();
+
+  return [...countries];
+}
+
+export async function fetchCountryByCode(code: string): Promise<CountryDetail> {
+  const countries: CountryDetail[] = await loadCountries();
+  const normalizedCode: string = code.trim().toUpperCase();
+  const country: CountryDetail | undefined = countries.find(
+    (item: CountryDetail): boolean =>
+      item.codes.alpha_2.toUpperCase() === normalizedCode,
+  );
 
   if (!country) {
-    throw new Error("No se encontró el país solicitado.");
+    throw new Error("No se encontró el país solicitado en los datos de la demo.");
   }
 
   return country;

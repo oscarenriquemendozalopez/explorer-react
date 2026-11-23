@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import type { JSX } from "react";
+import type { ChangeEvent, JSX } from "react";
 import { SiteHeader } from "./components/organisms/SiteHeader";
+
 import { Header } from "./components/organisms/Header";
 import { CountryCard } from "./components/molecules/CountryCard";
 import { LoadingState, EmptyState, ErrorState, } from "./components/organisms/CountryStates";
+
 import { fetchCountries } from "./api/countries";
 import { filterCountries } from "./utils/filter";
 import { paisUno, paisDos, paisTres, } from "./data/countries-demo";
