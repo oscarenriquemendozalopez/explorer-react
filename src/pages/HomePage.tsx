@@ -1,13 +1,15 @@
-import type { JSX } from "react";
+import type { ChangeEvent, JSX } from "react";
+import { useNavigate } from "react-router-dom";
+import type { NavigateFunction } from "react-router-dom";
 
 import { useCountries } from "../hooks/useCountries";
 import { useSearch } from "../hooks/userSearch";
 
 import { Header } from "../components/organisms/Header";
 import { SiteHeader } from "../components/organisms/SiteHeader";
-import { SiteFooter } from "../components/organisms/SiteFooter";
 import { CountryGrid } from "../components/organisms/CountryGrid";
-import {  LoadingState, EmptyState, ErrorState,} from "../components/organisms/CountryStates";
+import { LoadingState, EmptyState, ErrorState, } from "../components/organisms/CountryStates";
+
 import type { Country } from "../types/country";
 
 export default function App(): JSX.Element {
@@ -29,6 +31,14 @@ export default function App(): JSX.Element {
     new Set(countries.map((country) => country.region).filter(Boolean)),
   ).sort();
 
+  function handleQueryChange(event: ChangeEvent<HTMLInputElement>): void {
+    setQuery(event.currentTarget.value);
+  }
+
+  function handleRegionChange(event: ChangeEvent<HTMLSelectElement>): void {
+    setRegion(event.currentTarget.value);
+  }
+
   function handleClearFilters(): void {
     setQuery("");
     setRegion("");
@@ -43,16 +53,19 @@ export default function App(): JSX.Element {
   if (state.status === "loading") {
     content = <LoadingState />;
   } else if (state.status === "error") {
-    content = <ErrorState message={state.message} onRetry={retry} />;
-  } else if (visibleCountries.length > 0) {
     content = (
-      <CountryGrid
-        countries={visibleCountries}
-        onSelect={handleSelect}
-      />
+      <ErrorState message={state.message} onRetry={retry} />
     );
   } else {
-    content = <EmptyState query={debouncedQuery} />;
+    content =
+      visibleCountries.length > 0 ? (
+        <CountryGrid
+          countries={visibleCountries}
+          onSelect={handleSelect}
+        />
+      ) : (
+        <EmptyState query={debouncedQuery} />
+      );
   }
 
   return (
@@ -85,11 +98,19 @@ export default function App(): JSX.Element {
             Países destacados
           </h2>
 
-          {content}
-        </section>
-      </main>
+                    {state.status === "loading" ? (
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8 xl:grid-cols-4">
+                            {content}
+                        </div>
+                    ) : (
+                        content
+                    )}
 
-      <SiteFooter />
-    </div>
-  );
+
+                </section>
+            </main>
+
+            <SiteFooter />
+        </div>
+    );
 }
