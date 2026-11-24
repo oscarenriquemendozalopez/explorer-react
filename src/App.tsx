@@ -1,115 +1,43 @@
-import type { ChangeEvent, JSX } from "react";
-import { useCountries } from "./hooks/useCountries";
-import { useSearch } from "./hooks/userSearch";
+import type { JSX } from "react";
+import { Link, Route, Routes } from "react-router-dom";
 
-import { Header } from "./components/organisms/Header";
-import { SiteHeader } from "./components/organisms/SiteHeader";
-import { CountryGrid } from "./components/organisms/CountryGrid";
-
-import { LoadingState, EmptyState, ErrorState, } from "./components/organisms/CountryStates";
-import type { Country } from "./types/country";
+import HomePage from "./pages/HomePage";
+import CountryDetailPage from "./pages/CountryDetailPage";
 
 export default function App(): JSX.Element {
-  const { state, retry } = useCountries();
-
-  const countries: Country[] =
-    state.status === "success" ? state.data : [];
-
-  const {
-    query,
-    debouncedQuery,
-    region,
-    visibleCountries,
-    setQuery,
-    setRegion,
-  } = useSearch(countries);
-
-  const regions = Array.from(
-    new Set(countries.map((country) => country.region).filter(Boolean)),
-  ).sort();
-
-  function handleQueryChange(event: ChangeEvent<HTMLInputElement>): void {
-    setQuery(event.currentTarget.value);
-  }
-
-  function handleRegionChange(event: ChangeEvent<HTMLSelectElement>): void {
-    setRegion(event.currentTarget.value);
-  }
-
-  function handleClearFilters(): void {
-    setQuery("");
-    setRegion("");
-  }
-
-  function handleSelect(code: string): void {
-    console.log("País seleccionado:", code);
-  }
-
-  let content: JSX.Element;
-
-  if (state.status === "loading") {
-    content = <LoadingState />;
-  } else if (state.status === "error") {
-    content = (
-      <ErrorState message={state.message} onRetry={retry} />
-    );
-  } else {
-    content =
-      visibleCountries.length > 0 ? (
-        <CountryGrid
-          countries={visibleCountries}
-          onSelect={handleSelect}
-        />
-      ) : (
-        <EmptyState query={debouncedQuery} />
-      );
-  }
-
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50 text-neutral-900 dark:bg-slate-950 dark:text-white">
-      <SiteHeader />
+    <Routes>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
-        <Header
-          title="Explora países del mundo"
-          query={query}
-          region={region}
-          regions={regions}
-          onQueryChange={setQuery}
-          onRegionChange={setRegion}
-        >
-          <p>
-            Busca un país o filtra por región para consultar su información.
-          </p>
-        </Header>
+      <Route path="/" element={<HomePage />} />
 
-        <button type="button" onClick={handleClearFilters}>
-          Limpiar filtros
-        </button>
+      <Route
+        path="/country/:code"
+        element={<CountryDetailPage />}
+      />
 
-        <section id="paises" aria-labelledby="countries-title">
-          <h2
-            id="countries-title"
-            className="mb-6 font-semibold md:mb-8 md:text-3xl"
-          >
-            Países destacados
-          </h2>
+      <Route
+        path="*"
+        element={
+          <main className="min-h-screen bg-neutral-50 px-4 py-12 text-neutral-900">
+            <div className="mx-auto max-w-3xl">
+              <h1 className="text-3xl font-bold">
+                Página no encontrada
+              </h1>
 
-          {content}
-        </section>
-      </main>
+              <p className="mt-4">
+                La dirección que intentaste abrir no existe.
+              </p>
 
-      <footer
-        id="acerca-de"
-        className="mt-24 border-t border-neutral-300 bg-blue-400 text-white"
-      >
-        <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <p className="text-xs font-bold">Explorer App</p>
-          <p className="mt-2 text-sm font-light text-neutral-50">
-            © 2026 Explorer App. Datos proporcionados por REST Countries.
-          </p>
-        </div>
-      </footer>
-    </div>
+              <Link
+                to="/"
+                className="mt-6 inline-flex min-h-11 items-center rounded-full bg-blue-500 px-5 py-2 font-semibold text-neutral-900 hover:bg-purple-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600"
+              >
+                Volver al inicio
+              </Link>
+            </div>
+          </main>
+        }
+      />
+    </Routes>
   );
 }
