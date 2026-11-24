@@ -1,4 +1,5 @@
 import type { JSX } from "react";
+import { Link } from "react-router-dom"
 import type { Country } from "../../types/country";
 import { formatPopulation, getCapital, getFlagDescription, } from "../../utils/format";
 import { Badge } from "../atoms/Badge";

@@ -1,5 +1,27 @@
 # React + TypeScript + Vite
 
+# Explorer React
+Aplicación web desarrollada con React.
+
+## Requisitos
+
+- Node.js
+- npm
+
+## Descargar de archivo
+```bash
+git clone https://github.com/oscarenriquemendozalopez/explorer-react.git
+cd explorer-react
+```
+## Instalacion
+```bash
+pnpm install
+```
+## Ejecutarlo
+```bash
+pnpm run dev
+```
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
